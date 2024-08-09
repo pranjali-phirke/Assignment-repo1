@@ -3,26 +3,26 @@ name: Deploy to AWS ECS
 on:
   push:
     branches:
-      - main  # This triggers the workflow on pushes to the main branch
+      - main  
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # The environment in which the workflow will run
+    runs-on: ubuntu-latest  
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2  # This step checks out the code from your repository
+      uses: actions/checkout@v2 
 
     - name: Log in to Amazon ECR
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1  # This logs into your Amazon ECR account
+      uses: aws-actions/amazon-ecr-login@v1 
 
     - name: Build, tag, and push image to ECR
       run: |
         REPOSITORY_URI=${{ secrets.AWS_REGION }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
-        docker build -t myapp .  # Builds the Docker image with the tag 'myapp'
-        docker tag myapp:latest $REPOSITORY_URI:latest  # Tags the image with the latest version
-        docker push $REPOSITORY_URI:latest  # Pushes the image to your ECR repository
+        docker build -t myapp . 
+        docker tag myapp:latest $REPOSITORY_URI:latest 
+        docker push $REPOSITORY_URI:latest
 
     - name: Register Task Definition in ECS
       run: |
