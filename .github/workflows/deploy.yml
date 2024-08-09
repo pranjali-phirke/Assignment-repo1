@@ -1,1 +1,36 @@
+name: Deploy to AWS ECS
+
+on:
+  push:
+    branches:
+      - main  # This triggers the workflow on pushes to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # The environment in which the workflow will run
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2  # This step checks out the code from your repository
+
+    - name: Log in to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1  # This logs into your Amazon ECR account
+
+    - name: Build, tag, and push image to ECR
+      run: |
+        REPOSITORY_URI=${{ secrets.AWS_REGION }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
+        docker build -t myapp .  # Builds the Docker image with the tag 'myapp'
+        docker tag myapp:latest $REPOSITORY_URI:latest  # Tags the image with the latest version
+        docker push $REPOSITORY_URI:latest  # Pushes the image to your ECR repository
+
+    - name: Register Task Definition in ECS
+      run: |
+        TASK_DEFINITION=$(cat ecs-task-def.json | jq --arg IMAGE_URI "$REPOSITORY_URI:latest" '.containerDefinitions[0].image=$IMAGE_URI')
+        echo "$TASK_DEFINITION" > myapp-task-def.json
+        aws ecs register-task-definition --cli-input-json file://myapp-task-def.json
+
+    - name: Deploy to ECS
+      run: |
+        aws ecs update-service --cluster ${{ secrets.ECS_CLUSTER }} --service ${{ secrets.ECS_SERVICE }} --force-new-deployment
 
