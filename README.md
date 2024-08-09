@@ -1,4 +1,4 @@
-# Assignment-repo1
+
 # MyApp CI/CD Pipeline
 
 This repository contains a CI/CD pipeline for deploying a simple web application to AWS ECS using GitHub Actions. The pipeline includes steps for building, pushing Docker images, and deploying to ECS, with rollback functionality in case of failures.
